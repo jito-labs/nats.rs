@@ -118,7 +118,7 @@ use std::slice;
 use std::str::{self, FromStr};
 use std::task::{Context, Poll};
 use tokio::io::ErrorKind;
-use tokio::time::{interval, Duration, Interval, MissedTickBehavior};
+use tokio::time::{interval, Duration, Interval, interval_at, Instant, MissedTickBehavior};
 use url::{Host, Url};
 
 use bytes::Bytes;
@@ -478,7 +478,7 @@ impl ConnectionHandler {
 
     async fn handle_flush(&mut self) -> Result<(), io::Error> {
         self.connection.flush().await?;
-        self.flush_interval.reset();
+        self.flush_interval = interval_at(Instant::now(), self.flush_interval.period());
 
         Ok(())
     }
@@ -514,7 +514,7 @@ impl ConnectionHandler {
                     self.pending_pings, self.max_pings
                 );
                 self.pending_pings += 1;
-                self.ping_interval.reset();
+                self.ping_interval = interval_at(Instant::now(), self.ping_interval.period());
 
                 if self.pending_pings > self.max_pings {
                     debug!(
