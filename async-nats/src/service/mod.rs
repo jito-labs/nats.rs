@@ -406,7 +406,7 @@ impl Service {
         let info = Info {
             response_type: "io.nats.micro.v1.info_response".to_string(),
             name: config.name.clone(),
-            id: id.clone(),
+            id: id.to_string(),
             description: config.description.clone(),
             version: config.version.clone(),
             subjects: Vec::default(),
@@ -419,18 +419,18 @@ impl Service {
 
         // create subscriptions for all verbs.
         let mut pings =
-            verb_subscription(client.clone(), Verb::Ping, config.name.clone(), id.clone()).await?;
+            verb_subscription(client.clone(), Verb::Ping, config.name.clone(), id.to_string()).await?;
         let mut infos =
-            verb_subscription(client.clone(), Verb::Info, config.name.clone(), id.clone()).await?;
+            verb_subscription(client.clone(), Verb::Info, config.name.clone(), id.to_string()).await?;
         let mut schemas = verb_subscription(
             client.clone(),
             Verb::Schema,
             config.name.clone(),
-            id.clone(),
+            id.to_string(),
         )
         .await?;
         let mut stats =
-            verb_subscription(client.clone(), Verb::Stats, config.name.clone(), id.clone()).await?;
+            verb_subscription(client.clone(), Verb::Stats, config.name.clone(), id.to_string()).await?;
 
         // Start a task for handling verbs subscriptions.
         let handle = tokio::task::spawn({
@@ -442,7 +442,7 @@ impl Service {
             let schema_json = serde_json::to_vec(&json!({
                 "type": "io.nats.micro.v1.schema_response",
                 "name": config.name.clone(),
-                "id": id.clone(),
+                "id": id.to_string(),
                 "version": config.version.clone(),
             }))
             .map(Bytes::from)?;
